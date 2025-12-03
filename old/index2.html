@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Final Watch | Film Cafe</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --stranger-red: #E71D36;
+            --stranger-glow: #ff0000;
+            --bg-color: #050505;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Libre Baskerville', serif;
+            overflow-x: hidden;
+        }
+
+        /* --- ATMOSPHERE EFFECTS --- */
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 40%, black 95%);
+            pointer-events: none; z-index: 100;
+        }
+        .noise {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.05; pointer-events: none; z-index: 99;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        .spore {
+            position: absolute; background: rgba(200, 200, 200, 0.5);
+            border-radius: 50%; pointer-events: none; z-index: 5;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3 { text-transform: uppercase; }
+        p, .menu-item { font-family: 'Roboto Mono', monospace; }
+        
+        .main-title {
+            font-size: clamp(3rem, 10vw, 8rem);
+            color: transparent;
+            -webkit-text-stroke: 2px var(--stranger-red);
+            text-shadow: 0 0 10px var(--stranger-glow);
+            letter-spacing: -5px;
+            line-height: 1; text-align: center;
+        }
+        .bar {
+            width: 0%; height: 4px; background: var(--stranger-red);
+            margin: 20px 0; box-shadow: 0 0 15px var(--stranger-glow);
+        }
+        .section-title {
+            font-size: 2.5rem; margin-bottom: 30px; color: #fff;
+            text-shadow: 0 0 10px var(--stranger-red);
+            text-align: center;
+        }
+
+        /* --- SECTIONS --- */
+        section {
+            padding: 80px 20px;
+            position: relative; z-index: 10;
+            border-bottom: 1px solid #222;
+        }
+
+        .hero {
+            min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .hero-image-container {
+            width: 100%; max-width: 800px; height: 300px;
+            margin-top: 40px; overflow: hidden; border-radius: 10px;
+            box-shadow: 0 0 30px var(--stranger-red);
+            opacity: 0; /* For animation */
+        }
+        .hero-image-container img {
+            width: 100%; height: 100%; object-fit: cover;
+            filter: contrast(1.2) sepia(0.3) hue-rotate(-20deg);
+        }
+
+        .info-grid {
+            display: grid; grid-template-columns: 1fr; gap: 40px;
+            max-width: 1000px; margin: 0 auto;
+        }
+        .info-text p { font-size: 1.1rem; line-height: 1.8; margin-bottom: 20px; color: #ccc; }
+
+        .menu-section { background: #0a0a0a; display: flex; flex-direction: column; align-items: center; }
+        .menu-container {
+            display: flex; flex-direction: column; gap: 40px;
+            width: 100%; max-width: 1000px; align-items: center;
+        }
+        .menu-image {
+            width: 100%; max-width: 400px; height: auto;
+            border-radius: 8px; box-shadow: 0 0 20px rgba(231, 29, 54, 0.4);
+            filter: grayscale(0.5);
+        }
+        .menu-list { width: 100%; max-width: 600px; }
+        .menu-item {
+            display: flex; justify-content: space-between;
+            border-bottom: 1px dashed #444; padding: 12px 0;
+            font-size: 1.1rem; opacity: 0;
+        }
+
+        .location-box {
+            border: 2px solid var(--stranger-red); padding: 40px;
+            max-width: 600px; text-align: center;
+            box-shadow: 0 0 20px rgba(231, 29, 54, 0.3);
+            background: rgba(0,0,0,0.8); margin: 0 auto;
+        }
+
+        .cta-btn {
+            display: inline-block; margin-top: 50px; padding: 15px 40px;
+            background: transparent; color: var(--stranger-red);
+            border: 2px solid var(--stranger-red); text-decoration: none;
+            font-family: 'Libre Baskerville', serif; font-size: 1.5rem;
+            text-transform: uppercase; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 10px var(--stranger-red);
+        }
+        .cta-btn:hover {
+            background: var(--stranger-red); color: black;
+            box-shadow: 0 0 40px var(--stranger-red);
+        }
+
+        /* --- UTILS --- */
+        .lights {
+            display: flex; justify-content: center; gap: 15px;
+            margin-bottom: 30px; font-family: 'Roboto Mono', monospace;
+            font-size: 1.5rem; color: #ff00ff; text-shadow: 0 0 10px #ff00ff;
+        }
+        .animate-fade-up { opacity: 0; transform: translateY(30px); }
+
+        /* --- RESPONSIVE --- */
+        @media(min-width: 768px) {
+            .info-grid { grid-template-columns: 1fr 1fr; align-items: center; }
+            .menu-container { flex-direction: row; align-items: start; }
+            .hero-image-container { height: 450px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="vignette"></div>
+    <div class="noise"></div>
+    <div id="spore-container"></div>
+
+    <section class="hero">
+        <p class="intro-text animate-fade-up">WELCOME TO AUGUSTA AVE, HAWKINS</p>
+        
+        <h1 class="main-title">
+            <div id="title-line-1">FILM</div>
+            <div id="title-line-2">CAFE</div>
+        </h1>
+        
+        <div class="bar"></div>
+        
+        <p class="intro-text animate-fade-up" style="margin-top: 20px; letter-spacing: 2px;">THE FINAL EPISODE WATCH PARTY</p>
+
+        <div class="hero-image-container">
+            <img src="img1.png" alt="Film Cafe Stranger Things Atmosphere">
+        </div>
+    </section>
+
+
+    <section>
+        <div class="info-grid">
+            <div class="info-text">
+                <h2 class="section-title animate-fade-up" style="text-align: left;">One Last Trip to the Upside Down</h2>
+                <p class="animate-fade-up">The time has come. The gate is opening one final time. Join us at Film Café as we transform into Hawkins, Indiana for the premiere of the **final episode**.</p>
+                <p class="animate-fade-up">We're turning the lights down low and the synth music up high. It’s not just a watch party; it’s an immersion. Prepare for 80s nostalgia, spine-chilling vibes, and a collective gasp as we witness the end of an era together.</p>
+                <h3 class="animate-fade-up" style="color: var(--stranger-red); margin-top: 30px;">What to Expect:</h3>
+                <ul style="list-style: none; margin-top: 15px;" class="animate-fade-up">
+                    <li>📺 Massive screen viewing</li>
+                    <li>🎸 Curated 80s synth-wave playlist</li>
+                    <li>🔦 Themed decor & photo ops</li>
+                </ul>
+            </div>
+            <div class="hero-image-container animate-fade-up" style="height: 400px;">
+                 <img src="img2.png" alt="Fans watching TV">
+            </div>
+        </div>
+    </section>
+
+
+    <section class="menu-section">
+        <h2 class="section-title">Fuel for the Fight</h2>
+        
+        <div class="menu-container">
+            <img class="menu-image animate-fade-up" src="img3.png" alt="Themed Food Drink">
+            
+            <div class="menu-list">
+                <div class="menu-item"><span>Demodog Corn Ribs</span><span>$12.95</span></div>
+                <div class="menu-item"><span>Upside Down Espresso</span><span>$3.95</span></div>
+                <div class="menu-item"><span>Mind Flayer Lava Cake</span><span>$9.00</span></div>
+                <div class="menu-item"><span>Telekinetic Tacos (3)</span><span>$14.95</span></div>
+                <div class="menu-item"><span>011's Waffle Stack</span><span>$14.75</span></div>
+                <div class="menu-item"><span>Hopper's Coffee & Contemplation</span><span>$4.25</span></div>
+            </div>
+        </div>
+    </section>
+
+
+    <section style="text-align: center;">
+        <div class="lights">
+            <span>R</span><span>U</span><span>N</span>
+        </div>
+
+        <div class="location-box animate-fade-up">
+            <h2>Coordinates Found</h2>
+            <p style="font-size: 1.2rem; margin-bottom: 20px;">
+                <strong style="color: var(--stranger-red);">FILM CAFE</strong><br>
+                230 Augusta Ave<br>
+                Toronto, ON
+            </p>
+            <p>Doors open at 7:00 PM. Come before the clock strikes.</p>
+        </div>
+
+        <a href="https://filmcafetoronto.com/contact-us" target="_blank" class="cta-btn animate-fade-up">
+            SECURE YOUR SPOT
+        </a>
+    </section>
+
+
+    <script>
+        // --- 1. SPORE PARTICLE SYSTEM ---
+        const sporeContainer = document.getElementById('spore-container');
+        for (let i = 0; i < 60; i++) {
+            let dot = document.createElement('div');
+            dot.classList.add('spore');
+            let size = Math.random() * 3 + 1;
+            dot.style.width = `${size}px`; dot.style.height = `${size}px`;
+            dot.style.left = `${Math.random() * 100}vw`; dot.style.top = `${Math.random() * 100}vh`;
+            sporeContainer.appendChild(dot);
+
+            gsap.to(dot, {
+                y: `+=${Math.random() * 300 - 150}`,
+                x: `+=${Math.random() * 300 - 150}`,
+                opacity: Math.random() * 0.7,
+                duration: Math.random() * 15 + 10,
+                repeat: -1, yoyo: true, ease: "sine.inOut"
+            });
+        }
+
+        // --- 2. INTRO ANIMATION TIMELINE ---
+        const tl = gsap.timeline();
+        tl.from("#title-line-1", { scale: 50, opacity: 0, duration: 2.5, ease: "power4.out" })
+          .from("#title-line-2", { scale: 50, opacity: 0, duration: 2.5, ease: "power4.out" }, "-=2.2")
+          .to(".bar", { width: "60%", duration: 1.5, ease: "power2.out" }, "-=1")
+          .to(".main-title", { letterSpacing: "5px", duration: 4 }, "-=3")
+          .to(".intro-text", { opacity: 1, y: 0, duration: 1, stagger: 0.3 }, "-=3")
+          .to(".hero-image-container", { opacity: 1, duration: 2 }, "-=2");
+
+
+        // --- 3. SCROLLTRIGGER ANIMATIONS ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Generic Fade-Up for text and boxes
+        gsap.utils.toArray('.animate-fade-up').forEach(item => {
+            gsap.to(item, {
+                scrollTrigger: { trigger: item, start: "top 85%" },
+                opacity: 1, y: 0, duration: 0.8, ease: "power2.out"
+            });
+        });
+
+        // Menu Items Stagger
+        gsap.utils.toArray('.menu-item').forEach((item, i) => {
+            gsap.fromTo(item, 
+                { opacity: 0, x: -30 },
+                {
+                    scrollTrigger: { trigger: item, start: "top 95%" },
+                    opacity: 1, x: 0, duration: 0.6, delay: i * 0.1
+                }
+            );
+        });
+
+        // Lights Flickering Effect
+        gsap.to(".lights span", {
+            opacity: 0.2, duration: 0.1, repeat: -1, yoyo: true,
+            stagger: { each: 0.2, from: "random" }
+        });
+
+        // Box Pulse
+        gsap.to(".location-box", {
+            boxShadow: "0 0 50px rgba(231, 29, 54, 0.7)",
+            duration: 2.5, repeat: -1, yoyo: true, ease: "sine.inOut"
+        });
+    </script>
+</body>
+</html>
